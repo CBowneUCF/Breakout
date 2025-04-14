@@ -1,0 +1,24 @@
+Improvement 1. 
+Game is at free aspect but the ball bounces with collison that doesn't respect the screen size. The least complicated way to fix this is to lock the game's aspect ratio and set the Edge Collider's points to the exact corners. The Paddle's Max X is also too big.
+
+Improvement 2.
+The Hud scales to be the same pixel size despite the sizing of the screen, resulting in it taking over the whole screen if the screen is made small.
+I set the Canvas to Scale with Screen Size instead.
+
+Optimization 1.
+The Ball doesn't need to check every Frame/Update whether it is below the screen. It doesn't even need to check every PhysicsStep/FixedUpdate, if a collider with some kind of identifier as the death plane is placed on the bottom of the screen, the ball can sense when it collides with it and do its logic there. I made it directly compare the collision to a reference that it knows is the death collider.
+
+Optimization 2.
+The Ball does not use Physics to determine when it should do its Hit functionality to begin with. Instead the Bricks do and call FindObjectOfType and tell the ball to when they're hit. Yikes. Most of the hit functionality is something that would be more sensible as a Game Manager class to begin with, along with many other things on the ball, so most of the functionality was moved there.
+
+Optimization 3.
+Bricks don't need separate Awake and Start methods. Also, having the Game Manager keep an index counter of bricks is much faster than literally counting them. Have each brick tell the GM to add to the count on Awake and then take away from the count on death.
+
+Optimization 4.
+Several instances of a function only existing to be called once, thus being unecessary. I shifted their functionality to be in the functions calling them.
+
+Optimization 5.
+Added ResetPosition() method to both Paddle and Ball so they can deal with reseting their position since they have closer access to their own data, rather than doing everything in the ball class regardless of the separation.
+
+Optimization 6.
+Instead of manually doing a bunch of math calculations to calculate boundries and moving the paddle directly, let's use the edge colliders already in the project and make the Paddle a Rigidbody so it uses physics.
