@@ -1,90 +1,38 @@
-using System.Collections;
-using System.Collections.Generic;
-using TMPro;
 using UnityEngine;
-using UnityEngine.SceneManagement;
-using UnityEngine.SocialPlatforms.Impl;
 
 public class Ball : MonoBehaviour
 {
-    public float minY = -10.5f;
     public float maxVelocity = 20f;
-    public Rigidbody2D rb;
-    public Paddle paddle;
-    public int lives;
-    public int score;
-    public TextMeshProUGUI scoreText;
-    public GameObject[] livesImage;
-    public GameObject gameOver;
-    public GameObject youWin;
-    public Brick[] bricks { get; private set; }
-    // Start is called before the first frame update
+    
+    // Most of this stuff is more suited for a Game Manager, which technically can be fine on a ball like this, but, single responsibility principle.
+    //All Methods and Fields more suited to a GameManager have been moved there.
+
+    public Vector3 startVelocity = new(0, -15f, 0);
+    public GameObject deathPlane; //DeathPlane object to be collided with.
+
+    private Rigidbody2D rb;
+    private Vector3 startPosition = new(0, -5.5f, 0);
+
     void Start()
     {
+        rb = GetComponent<Rigidbody2D>();
         Time.timeScale = 1;
-        this.bricks = FindObjectsOfType<Brick>();
-        score = 0;
-        lives = 5;
         rb.velocity = Vector2.down * 15;
+        startPosition = transform.position; //Set Default Position at start for customizability.
+        //Start Velocity must be actual parameter because Velocity can't be set on rigidbody in inspector
     }
 
-    // Update is called once per frame
-    void Update()
+    // Update is not needed. See Below.
+
+    //Do DeathPlane by physics rather than checking y position every update.
+    private void OnCollisionEnter2D(Collision2D collision)
     {
-        if(transform.position.y < minY)
-        {
-            if (lives <= 0)
-            {
-                GameOver();
-            }
-            else
-            {
-                transform.position = new Vector3(0,-5.5f,0);
-                rb.velocity = Vector2.down * 15;
-                paddle.transform.position = new Vector3(0, -8, 0);
-                lives--;
-                livesImage[lives].SetActive(false);
-            }
-        }
-    }
-    public void Hit()
-    {
-        this.score += 10;
-        scoreText.SetText("Score: " + score);
-        if (Clear())
-        {
-            youWin.SetActive(true);
-            Time.timeScale = 0;
-        }
-    }
-    public void GameOver()
-    {
-        gameOver.SetActive(true);
-        Time.timeScale = 0;
+        if (collision.gameObject == deathPlane) GameManager.instance.BallDeath();
     }
 
-    public bool Clear()
+    public void ResetPosition()
     {
-        for (int i =  0; i < this.bricks.Length; i++)
-        {
-            if (this.bricks[i].gameObject.activeInHierarchy)
-            {
-                return false;
-            }
-        }
-        return true;
-    }
-    public void YouWin()
-    {
-        if (Clear())
-        {
-            youWin.SetActive(true);
-            Time.timeScale = 0;
-        }
-    }
-
-    public void Restart()
-    {
-        SceneManager.LoadScene("SampleScene");
+        transform.position = startPosition;
+        rb.velocity = startVelocity;
     }
 }

@@ -4,40 +4,28 @@ using UnityEngine;
 
 public class Brick : MonoBehaviour
 {
-    public SpriteRenderer sprite {  get; private set; }
+    private SpriteRenderer sprite; //Doesn't need to be Property, just make private field.
     public Color[] states;
-    public int health { get; private set; }
+    private int health; //Doesn't need to be Property, just make private field.
 
-    // Start is called before the first frame update
     private void Awake()
     {
-        this.sprite = GetComponent<SpriteRenderer>();
+        sprite = GetComponent<SpriteRenderer>(); 
+        GameManager.bricksLeft++;
+        health = states.Length;
+        sprite.color = states[health - 1];
     }
-    private void Start()
-    {
-        this.health = this.states.Length;
-        this.sprite.color = this.states[this.health - 1];
-    }
-
-    private void Hit()
-    {
-        this.health--;
-        if(this.health <= 0)
-        {
-            this.gameObject.SetActive(false);
-        }
-        else
-        {
-            this.sprite.color = this.states[this.health - 1];
-        }
-        FindObjectOfType<Ball>().Hit();
-    }
+    //Separate Start and Awake serve no purpose here.
 
     private void OnCollisionEnter2D(Collision2D collision)
     {
-        if (collision.gameObject.name == "Ball")
-        {
-            Hit();
-        }
+        //Separate function call not needed, also since these bricks don't move, nothing besides the ball can collide with them.
+        health--;
+        if (health <= 0) gameObject.SetActive(false);
+        else sprite.color = states[health - 1];
+        GameManager.instance.BrickHit(health <= 0);
+        //FindObjectOfType<Ball>().Hit(); ---- This is genuinely like the worst possible way to do this.
     }
+
+    //Whats with all the "this" indirection? I don't even know if that's inefficient it's just unecessary and visually obnoxious.
 }
